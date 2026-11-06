@@ -1,0 +1,17 @@
+# Ters vekil örneği (otomatik TLS / Let's Encrypt). Ubuntu: sudo cp ops/Caddyfile.example /etc/caddy/Caddyfile
+# (alan adını değiştirin) && sudo systemctl reload caddy
+oftalmoakademi.example.edu.tr {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:3000 {
+        # Yapay zekâ asistanı yanıtları akış (stream) olarak gelir; ara belleğe almadan ilet
+        flush_interval -1
+    }
+    header {
+        # Uygulama kendi güvenlik başlıklarını üretir; burada yalnızca HSTS ön yükleme
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+    }
+    request_body {
+        # Uygulamadaki en büyük yükleme sınırıyla aynı (ders videosu 150 MB + form verisi)
+        max_size 160MB
+    }
+}

@@ -1,0 +1,25 @@
+# Nginx ters vekil örneği (Caddy yerine). Ubuntu:
+#   sudo cp ops/nginx.conf.example /etc/nginx/sites-available/oftalmoakademi
+#   sudo ln -s /etc/nginx/sites-available/oftalmoakademi /etc/nginx/sites-enabled/
+#   sudo certbot --nginx -d oftalmoakademi.example.edu.tr     # TLS sertifikası
+#   sudo nginx -t && sudo systemctl reload nginx
+server {
+    listen 80;
+    server_name oftalmoakademi.example.edu.tr;
+
+    # Uygulamadaki en büyük yükleme sınırıyla aynı (ders videosu 150 MB + form verisi)
+    client_max_body_size 160m;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
+        # Yapay zekâ asistanı akış (stream) yanıtları ve uzun süren PDF/YZ işlemleri
+        proxy_buffering off;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+}
